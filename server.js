@@ -40,7 +40,7 @@ function getDefaultData() {
       {
         id: 'reconnect',
         title: '四月的消息',
-        date: '2025年4月底',
+        date: '2026年4月底',
         content: '那天，手机屏幕亮起，是你的名字。\n多年以后，你突然联系了我。',
         image: '',
         order: 1,
@@ -49,7 +49,7 @@ function getDefaultData() {
       {
         id: 'chatting',
         title: '慢慢靠近',
-        date: '2025年5月 — 现在',
+        date: '2026年4月 — 现在',
         content: '从第一条消息开始，我们聊了很多很多。\n生活、梦想、过去、未来……\n不知不觉，有些东西在悄悄改变。',
         image: '',
         order: 2,
@@ -58,7 +58,7 @@ function getDefaultData() {
       {
         id: 'now',
         title: '此时此刻',
-        date: '2025年6月',
+        date: '2026年6月',
         content: '我写下了这个页面。\n想告诉你一些，还没有说出口的话。',
         image: '',
         order: 3,
@@ -73,10 +73,26 @@ function getDefaultData() {
   };
 }
 
+function migrateData(data) {
+  let changed = false;
+  (data.sections || []).forEach(s => {
+    if (s.date && s.date.includes('2025')) {
+      s.date = s.date.replace(/2025/g, '2026');
+      changed = true;
+    }
+  });
+  return changed;
+}
+
 function readData() {
   try {
     if (fs.existsSync(DATA_FILE)) {
-      return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+      if (migrateData(data)) {
+        writeData(data);
+        console.log('数据已迁移：2025 → 2026');
+      }
+      return data;
     }
   } catch (e) { /* ignore */ }
   const d = getDefaultData();

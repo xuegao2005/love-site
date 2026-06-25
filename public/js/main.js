@@ -31,6 +31,13 @@
     if (!siteData || !siteData.sections) return;
     container.innerHTML = '';
 
+    function formatDate(dateStr) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
+      return dateStr.replace(/现在/g, `${y}年${m}月`);
+    }
+
     siteData.sections.forEach((sec, i) => {
       const el = document.createElement('section');
       el.className = 'story-section';
@@ -39,7 +46,7 @@
       el.innerHTML = `
         <div class="timeline-dot"></div>
         <div class="section-inner">
-          ${sec.date ? `<p class="section-date reveal">${sec.date}</p>` : ''}
+          ${sec.date ? `<p class="section-date reveal">${formatDate(sec.date)}</p>` : ''}
           <h2 class="section-title reveal">${sec.title}</h2>
           <p class="section-content reveal">${sec.content}</p>
           ${sec.image ? `<div class="section-image reveal"><img src="${sec.image}" alt="${sec.title}"></div>` : ''}
