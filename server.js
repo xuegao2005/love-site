@@ -29,12 +29,12 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 function getDefaultData() {
   return {
     site: {
-      title: '给润欣',
+      title: '致我爱的人',
       subtitle: '一个关于我们的故事',
       girlName: '易润欣',
       boyName: '薛高',
-      greeting: '有些话，想慢慢说给你听',
-      ending: '我们的故事，才刚刚开始',
+      greeting: '这些话，在心里藏了很久',
+      ending: '故事还很长，我们慢慢写',
     },
     sections: [
       {
