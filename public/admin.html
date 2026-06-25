@@ -360,7 +360,7 @@
             <input type="hidden" name="id" value="">
             <div class="form-row">
               <div class="form-group"><label>标题</label><input name="title" required></div>
-              <div class="form-group"><label>日期（可选）</label><input name="date" placeholder="如：2025年4月底"></div>
+              <div class="form-group"><label>日期（可选）</label><input name="date" placeholder="如：2026年4月底"></div>
             </div>
             <div class="form-group"><label>内容（换行即分段）</label><textarea name="content" rows="4"></textarea></div>
             <div class="form-group"><label>图片链接（可选）</label><input name="image" placeholder="上传图片后粘贴链接"></div>
@@ -429,7 +429,7 @@
     function renderChats() {
       const chats = allData.chats || [];
       let html = `<h3>💬 聊天记录</h3><div class="card"><p style="color:#888;font-size:0.9rem">支持批量导入。格式：每行一条记录，用 | 分隔。<br>格式：<b>发送方(her/him) | 内容 | 日期 | 备注(可选)</b></p>
-        <textarea id="batchInput" rows="4" placeholder="示例：&#10;her | 好久不见！最近怎么样 | 2025-04-28 10:30 | 她主动联系了我&#10;him | 哇！好久不见！！我很好！ | 2025-04-28 10:32"></textarea>
+        <textarea id="batchInput" rows="4" placeholder="示例：&#10;her | 好久不见！最近怎么样 | 2026-04-28 10:30 | 她主动联系了我&#10;him | 哇！好久不见！！我很好！ | 2026-04-28 10:32"></textarea>
         <button class="btn btn-primary btn-sm" onclick="batchImport()" style="margin-top:8px">📥 批量导入</button>
       </div>`;
 

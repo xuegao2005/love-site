@@ -6,7 +6,7 @@ services:
     startCommand: node server.js
     envVars:
       - key: ADMIN_PASSWORD
-        value: runxin2025
+        value: yirunxin
       - key: NODE_ENV
         value: production
       - key: DATA_DIR

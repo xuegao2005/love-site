@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const DATA_FILE = path.join(DATA_DIR, 'site.json');
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'runxin2025';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'yirunxin';
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -268,5 +268,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`Admin: http://localhost:${PORT}/admin`);
-  console.log(`Password: ${ADMIN_PASSWORD}`);
+  console.log(`Admin password configured`);
 });

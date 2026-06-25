@@ -22,6 +22,7 @@
     document.getElementById('coverSubtitle').textContent = s.subtitle;
     document.getElementById('coverGreeting').textContent = s.greeting;
     document.getElementById('endingTitle').textContent = s.ending;
+    document.getElementById('endingNote').textContent = `From ${s.boyName} · ${new Date().getFullYear()}`;
     document.title = s.title;
   }
 
