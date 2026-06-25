@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 · 给润欣</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #FF6B6B;
+      --primary-dark: #e55a5a;
+      --bg: #fafafa;
+      --card: #fff;
+      --text: #333;
+      --text-light: #888;
+      --border: #e8e8e8;
+      --radius: 10px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    .login-card {
+      background: #fff; border-radius: 16px; padding: 48px 40px;
+      width: 380px; max-width: 90vw; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .login-card h1 { font-size: 1.8rem; margin-bottom: 8px; }
+    .login-card p { color: #999; margin-bottom: 32px; font-size: 0.9rem; }
+    .login-card input {
+      width: 100%; padding: 14px 18px; border: 2px solid #eee;
+      border-radius: 10px; font-size: 1rem; margin-bottom: 16px;
+      text-align: center; transition: border 0.2s;
+    }
+    .login-card input:focus { outline: none; border-color: var(--primary); }
+    .login-card button {
+      width: 100%; padding: 14px; background: var(--primary);
+      color: #fff; border: none; border-radius: 10px; font-size: 1rem;
+      cursor: pointer; font-weight: 600; transition: background 0.2s;
+    }
+    .login-card button:hover { background: var(--primary-dark); }
+    .login-error { color: #e74c3c; font-size: 0.85rem; margin-top: 12px; display: none; }
+
+    /* Admin layout */
+    .admin-screen { display: none; }
+    .admin-header {
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 60px; display: flex;
+      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+    .admin-header h2 { font-size: 1.1rem; font-weight: 600; }
+    .admin-header .back-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+    .admin-header button {
+      padding: 6px 16px; background: none; border: 1px solid #ddd;
+      border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+    }
+
+    .admin-body { display: flex; min-height: calc(100vh - 60px); }
+    .admin-nav {
+      width: 200px; background: #fff; border-right: 1px solid var(--border);
+      padding: 24px 0; flex-shrink: 0;
+    }
+    .admin-nav a {
+      display: block; padding: 12px 24px; color: var(--text);
+      text-decoration: none; font-size: 0.95rem; transition: all 0.15s;
+    }
+    .admin-nav a:hover, .admin-nav a.active { background: #fff5f5; color: var(--primary); font-weight: 600; }
+
+    .admin-content {
+      flex: 1; padding: 32px; max-width: 900px; overflow-y: auto;
+    }
+    .admin-content h3 { font-size: 1.25rem; margin-bottom: 24px; }
+
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card h4 { font-size: 1rem; margin-bottom: 16px; color: var(--text); }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-light); margin-bottom: 6px; font-weight: 500; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.95rem; font-family: inherit;
+      transition: border 0.2s; resize: vertical;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .form-group textarea { min-height: 80px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    .btn {
+      padding: 10px 24px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
+      border: none; font-weight: 500; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: #f5f5f5; }
+    .btn-danger { background: none; color: #e74c3c; border: 1px solid #fdd; }
+    .btn-danger:hover { background: #fff5f5; }
+    .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+    .btn-group { display: flex; gap: 8px; margin-top: 16px; }
+
+    .section-item, .chat-item {
+      background: var(--card); border-radius: var(--radius);
+      padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .section-drag { color: #ccc; cursor: grab; font-size: 1.2rem; }
+    .section-info, .chat-info { flex: 1; }
+    .section-info .title { font-weight: 600; }
+    .section-info .meta { font-size: 0.8rem; color: var(--text-light); }
+    .chat-info .msg { font-size: 0.95rem; }
+    .chat-info .meta { font-size: 0.8rem; color: var(--text-light); }
+    .section-actions, .chat-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 500;
+    }
+    .badge-her { background: #FFE0E0; color: #c44; }
+    .badge-him { background: #D1E8FF; color: #36c; }
+    .badge-active { background: #e8f5e9; color: #388e3c; }
+    .badge-inactive { background: #f5f5f5; color: #999; }
+
+    .empty-state { text-align: center; padding: 48px; color: #ccc; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 24px;
+      background: #333; color: #fff; border-radius: 8px; font-size: 0.9rem;
+      z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #27ae60; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--card); border-radius: var(--radius); padding: 20px;
+      text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .stat-card .num { font-size: 2rem; font-weight: 700; color: var(--primary); }
+    .stat-card .label { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
+
+    @media (max-width: 700px) {
+      .admin-nav { display: none; }
+      .admin-content { padding: 20px; }
+      .form-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 登录界面 -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <h1>🔐 管理后台</h1>
+      <p>输入密码以管理网站内容</p>
+      <input type="password" id="loginPassword" placeholder="管理员密码" autofocus>
+      <button onclick="login()">进入后台</button>
+      <p class="login-error" id="loginError">密码错误</p>
+    </div>
+  </div>
+
+  <!-- 管理界面 -->
+  <div class="admin-screen" id="adminScreen">
+    <div class="admin-header">
+      <h2>💕 管理后台 — 给润欣</h2>
+      <div>
+        <a href="/" target="_blank" class="back-link">查看网站 →</a>
+        <button onclick="logout()" style="margin-left:12px">退出</button>
+      </div>
+    </div>
+    <div class="admin-body">
+      <nav class="admin-nav">
+        <a href="#" data-page="dashboard" class="active" onclick="switchPage('dashboard')">📊 概览</a>
+        <a href="#" data-page="site" onclick="switchPage('site')">⚙️ 网站设置</a>
+        <a href="#" data-page="sections" onclick="switchPage('sections')">📖 故事章节</a>
+        <a href="#" data-page="chats" onclick="switchPage('chats')">💬 聊天记录</a>
+        <a href="#" data-page="upload" onclick="switchPage('upload')">📷 上传文件</a>
+      </nav>
+      <div class="admin-content" id="adminContent"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let token = localStorage.getItem('admin_token');
+    let allData = null;
+
+    // ========== Auth ==========
+    if (token) tryShowAdmin();
+
+    function login() {
+      const pw = document.getElementById('loginPassword').value;
+      fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          token = data.token;
+          localStorage.setItem('admin_token', token);
+          document.getElementById('loginError').style.display = 'none';
+          showAdmin();
+        } else {
+          document.getElementById('loginError').style.display = 'block';
+        }
+      });
+    }
+
+    document.getElementById('loginPassword').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    function tryShowAdmin() {
+      // Verify token
+      fetch('/api/admin/data', { headers: { 'x-admin-token': token } })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(() => showAdmin())
+        .catch(() => { token = null; localStorage.removeItem('admin_token'); });
+    }
+
+    function showAdmin() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminScreen').style.display = 'block';
+      loadAllData();
+    }
+
+    function logout() {
+      token = null;
+      localStorage.removeItem('admin_token');
+      document.getElementById('adminScreen').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('loginPassword').value = '';
+    }
+
+    // ========== API Helpers ==========
+    function api(path, options = {}) {
+      options.headers = { ...options.headers, 'x-admin-token': token };
+      return fetch(path, options).then(r => {
+        if (r.status === 401) { logout(); throw new Error('未授权'); }
+        return r.json();
+      });
+    }
+
+    async function loadAllData() {
+      allData = await api('/api/admin/data');
+      renderPage();
+    }
+
+    // ========== Page Routing ==========
+    function switchPage(page) {
+      document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+      document.querySelector(`.admin-nav a[data-page="${page}"]`).classList.add('active');
+      renderPage(page);
+    }
+
+    function renderPage(page) {
+      if (!allData) return;
+      page = page || 'dashboard';
+      const c = document.getElementById('adminContent');
+      switch (page) {
+        case 'dashboard': c.innerHTML = renderDashboard(); break;
+        case 'site': c.innerHTML = renderSiteSettings(); break;
+        case 'sections': c.innerHTML = renderSections(); break;
+        case 'chats': c.innerHTML = renderChats(); break;
+        case 'upload': c.innerHTML = renderUpload(); break;
+      }
+    }
+
+    // ========== Pages ==========
+    function renderDashboard() {
+      const chats = allData.chats || [];
+      const sections = allData.sections || [];
+      const herMsgs = chats.filter(c => c.sender === 'her').length;
+      const himMsgs = chats.filter(c => c.sender === 'him').length;
+      return `
+        <h3>📊 概览</h3>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="num">${sections.length}</div><div class="label">故事章节</div></div>
+          <div class="stat-card"><div class="num">${chats.length}</div><div class="label">聊天记录</div></div>
+          <div class="stat-card"><div class="num">${herMsgs}</div><div class="label">她的消息</div></div>
+          <div class="stat-card"><div class="num">${himMsgs}</div><div class="label">你的消息</div></div>
+        </div>
+        <div class="card">
+          <h4>快速操作</h4>
+          <p style="color:#888;font-size:0.9rem">通过左侧菜单管理网站内容。修改后刷新前台页面即可看到效果。</p>
+        </div>
+      `;
+    }
+
+    function renderSiteSettings() {
+      const s = allData.site;
+      return `
+        <h3>⚙️ 网站设置</h3>
+        <form id="siteForm" class="card" onsubmit="saveSite(event)">
+          <div class="form-row">
+            <div class="form-group"><label>网站标题</label><input name="title" value="${esc(s.title)}"></div>
+            <div class="form-group"><label>副标题</label><input name="subtitle" value="${esc(s.subtitle)}"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>她的名字</label><input name="girlName" value="${esc(s.girlName)}"></div>
+            <div class="form-group"><label>你的名字</label><input name="boyName" value="${esc(s.boyName)}"></div>
+          </div>
+          <div class="form-group"><label>封面问候语</label><input name="greeting" value="${esc(s.greeting)}"></div>
+          <div class="form-group"><label>结尾文案</label><input name="ending" value="${esc(s.ending)}"></div>
+          <button type="submit" class="btn btn-primary">💾 保存设置</button>
+        </form>
+      `;
+    }
+
+    function saveSite(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      api('/api/admin/site', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(() => { toast('设置已保存', true); loadAllData(); });
+    }
+
+    function renderSections() {
+      const sections = allData.sections || [];
+      let html = `<h3>📖 故事章节</h3>`;
+      if (sections.length === 0) {
+        html += `<div class="empty-state"><div class="icon">📝</div><p>还没有章节</p></div>`;
+      } else {
+        html += `<div id="sectionList">`;
+        sections.sort((a, b) => a.order - b.order).forEach(sec => {
+          html += `
+            <div class="section-item" data-id="${sec.id}">
+              <span class="section-drag">☰</span>
+              <div class="section-info">
+                <div class="title">${sec.order}. ${esc(sec.title)} <span class="badge ${sec.active ? 'badge-active' : 'badge-inactive'}">${sec.active ? '显示' : '隐藏'}</span></div>
+                <div class="meta">${sec.date || '无日期'} · ${(sec.content || '').slice(0, 40)}...</div>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-outline btn-sm" onclick="editSection('${sec.id}')">编辑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSection('${sec.id}')">删除</button>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `
+        <div class="card" id="sectionFormCard" style="display:none">
+          <h4 id="sectionFormTitle">添加章节</h4>
+          <form id="sectionForm" onsubmit="saveSection(event)">
+            <input type="hidden" name="id" value="">
+            <div class="form-row">
+              <div class="form-group"><label>标题</label><input name="title" required></div>
+              <div class="form-group"><label>日期（可选）</label><input name="date" placeholder="如：2025年4月底"></div>
+            </div>
+            <div class="form-group"><label>内容（换行即分段）</label><textarea name="content" rows="4"></textarea></div>
+            <div class="form-group"><label>图片链接（可选）</label><input name="image" placeholder="上传图片后粘贴链接"></div>
+            <div class="form-group"><label><input type="checkbox" name="active" checked> 显示在前台</label></div>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">💾 保存</button>
+              <button type="button" class="btn btn-outline" onclick="cancelSection()">取消</button>
+            </div>
+          </form>
+        </div>
+        <button class="btn btn-primary" onclick="newSection()" style="margin-top:12px">+ 添加章节</button>
+      `;
+      return html;
+    }
+
+    function newSection() {
+      const card = document.getElementById('sectionFormCard');
+      card.style.display = 'block';
+      document.getElementById('sectionFormTitle').textContent = '添加章节';
+      document.getElementById('sectionForm').reset();
+      document.getElementById('sectionForm').querySelector('[name=id]').value = '';
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function editSection(id) {
+      const sec = allData.sections.find(s => s.id === id);
+      if (!sec) return;
+      const card = document.getElementById('sectionFormCard');
+      card.style.display = 'block';
+      document.getElementById('sectionFormTitle').textContent = '编辑章节';
+      const f = document.getElementById('sectionForm');
+      f.querySelector('[name=id]').value = sec.id;
+      f.querySelector('[name=title]').value = sec.title;
+      f.querySelector('[name=date]').value = sec.date || '';
+      f.querySelector('[name=content]').value = sec.content || '';
+      f.querySelector('[name=image]').value = sec.image || '';
+      f.querySelector('[name=active]').checked = sec.active;
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelSection() {
+      document.getElementById('sectionFormCard').style.display = 'none';
+    }
+
+    function saveSection(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      data.active = fd.get('active') === 'on';
+      const id = data.id;
+      delete data.id;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/admin/sections/${id}` : '/api/admin/sections';
+
+      api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(() => { toast('保存成功', true); loadAllData(); cancelSection(); });
+    }
+
+    function deleteSection(id) {
+      if (!confirm('确定删除这个章节？')) return;
+      api(`/api/admin/sections/${id}`, { method: 'DELETE' })
+        .then(() => { toast('已删除'); loadAllData(); });
+    }
+
+    function renderChats() {
+      const chats = allData.chats || [];
+      let html = `<h3>💬 聊天记录</h3><div class="card"><p style="color:#888;font-size:0.9rem">支持批量导入。格式：每行一条记录，用 | 分隔。<br>格式：<b>发送方(her/him) | 内容 | 日期 | 备注(可选)</b></p>
+        <textarea id="batchInput" rows="4" placeholder="示例：&#10;her | 好久不见！最近怎么样 | 2025-04-28 10:30 | 她主动联系了我&#10;him | 哇！好久不见！！我很好！ | 2025-04-28 10:32"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="batchImport()" style="margin-top:8px">📥 批量导入</button>
+      </div>`;
+
+      if (chats.length === 0) {
+        html += `<div class="empty-state"><div class="icon">💬</div><p>还没有聊天记录</p></div>`;
+      } else {
+        html += `<div id="chatList">`;
+        chats.forEach(chat => {
+          const d = new Date(chat.timestamp);
+          const dateStr = d.toLocaleDateString('zh-CN');
+          html += `
+            <div class="chat-item" data-id="${chat.id}">
+              <div class="chat-info">
+                <div class="msg">
+                  <span class="badge ${chat.sender === 'her' ? 'badge-her' : 'badge-him'}">${chat.sender === 'her' ? '她' : '我'}</span>
+                  ${chat.favorite ? '❤️ ' : ''}${esc(chat.content).slice(0, 60)}${chat.content.length > 60 ? '...' : ''}
+                </div>
+                <div class="meta">${dateStr} ${chat.note ? '· ' + chat.note : ''}</div>
+              </div>
+              <div class="chat-actions">
+                <button class="btn btn-outline btn-sm" onclick="editChat('${chat.id}')">编辑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteChat('${chat.id}')">删除</button>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `
+        <div class="card" id="chatFormCard" style="display:none">
+          <h4 id="chatFormTitle">添加消息</h4>
+          <form id="chatForm" onsubmit="saveChat(event)">
+            <input type="hidden" name="id" value="">
+            <div class="form-group"><label>发送方</label><select name="sender"><option value="her">她 (易润欣)</option><option value="him">我 (薛高)</option></select></div>
+            <div class="form-group"><label>内容</label><textarea name="content" rows="3" required></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label>时间</label><input type="datetime-local" name="timestamp"></div>
+              <div class="form-group"><label>备注（显示在气泡上方）</label><input name="note" placeholder="如：她主动联系我"></div>
+            </div>
+            <div class="form-group"><label>图片链接（可选）</label><input name="image" placeholder="上传后粘贴链接"></div>
+            <div class="form-group"><label><input type="checkbox" name="favorite"> 标为收藏 ❤️</label></div>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">💾 保存</button>
+              <button type="button" class="btn btn-outline" onclick="cancelChat()">取消</button>
+            </div>
+          </form>
+        </div>
+        <button class="btn btn-primary" onclick="newChat()" style="margin-top:12px">+ 添加消息</button>
+      `;
+      return html;
+    }
+
+    function newChat() {
+      const card = document.getElementById('chatFormCard');
+      card.style.display = 'block';
+      document.getElementById('chatFormTitle').textContent = '添加消息';
+      const f = document.getElementById('chatForm');
+      f.reset();
+      f.querySelector('[name=id]').value = '';
+      const now = new Date();
+      f.querySelector('[name=timestamp]').value = now.toISOString().slice(0, 16);
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function editChat(id) {
+      const chat = allData.chats.find(c => c.id === id);
+      if (!chat) return;
+      const card = document.getElementById('chatFormCard');
+      card.style.display = 'block';
+      document.getElementById('chatFormTitle').textContent = '编辑消息';
+      const f = document.getElementById('chatForm');
+      f.querySelector('[name=id]').value = chat.id;
+      f.querySelector('[name=sender]').value = chat.sender;
+      f.querySelector('[name=content]').value = chat.content;
+      f.querySelector('[name=timestamp]').value = new Date(chat.timestamp).toISOString().slice(0, 16);
+      f.querySelector('[name=note]').value = chat.note || '';
+      f.querySelector('[name=image]').value = chat.image || '';
+      f.querySelector('[name=favorite]').checked = chat.favorite;
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelChat() {
+      document.getElementById('chatFormCard').style.display = 'none';
+    }
+
+    function saveChat(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      data.favorite = fd.get('favorite') === 'on';
+      if (data.timestamp) data.timestamp = new Date(data.timestamp).toISOString();
+      const id = data.id;
+      delete data.id;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/admin/chats/${id}` : '/api/admin/chats';
+
+      api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(() => { toast('保存成功', true); loadAllData(); cancelChat(); });
+    }
+
+    function deleteChat(id) {
+      if (!confirm('确定删除这条消息？')) return;
+      api(`/api/admin/chats/${id}`, { method: 'DELETE' })
+        .then(() => { toast('已删除'); loadAllData(); });
+    }
+
+    function batchImport() {
+      const text = document.getElementById('batchInput').value.trim();
+      if (!text) return toast('请粘贴聊天记录');
+      const lines = text.split('\n').filter(l => l.trim());
+      const messages = [];
+      for (const line of lines) {
+        const parts = line.split('|').map(s => s.trim());
+        if (parts.length < 3) continue;
+        const [sender, content, timestamp, note] = parts;
+        if (sender !== 'her' && sender !== 'him') continue;
+        messages.push({
+          sender,
+          content,
+          timestamp: new Date(timestamp).toISOString(),
+          note: note || '',
+        });
+      }
+      if (messages.length === 0) return toast('没有解析到有效消息，检查格式');
+      api('/api/admin/chats/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      }).then(r => { toast(`成功导入 ${r.count} 条消息`, true); loadAllData(); });
+    }
+
+    function renderUpload() {
+      return `
+        <h3>📷 上传文件</h3>
+        <div class="card">
+          <h4>上传图片</h4>
+          <p style="color:#888;font-size:0.9rem;margin-bottom:16px">上传聊天截图或其他图片，上传后复制链接粘贴到对应位置</p>
+          <input type="file" id="uploadFile" accept="image/*" style="margin-bottom:12px">
+          <button class="btn btn-primary btn-sm" onclick="uploadFile()">📤 上传</button>
+          <div id="uploadResult" style="margin-top:12px;font-size:0.9rem"></div>
+          <div id="uploadPreview" style="margin-top:12px"></div>
+        </div>
+        <div class="card">
+          <h4>已上传文件</h4>
+          <p style="color:#888;font-size:0.85rem">文件存储在服务器 uploads/ 目录下</p>
+        </div>
+      `;
+    }
+
+    function uploadFile() {
+      const fileInput = document.getElementById('uploadFile');
+      const file = fileInput.files[0];
+      if (!file) return toast('请选择文件');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+        body: formData,
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.url) {
+          document.getElementById('uploadResult').innerHTML = `
+            <p style="color:#27ae60">上传成功！</p>
+            <p>链接：<input value="${data.url}" readonly style="width:100%;padding:6px;border:1px solid #eee;border-radius:6px;margin-top:4px" onclick="this.select()"></p>
+          `;
+          document.getElementById('uploadPreview').innerHTML = `<img src="${data.url}" style="max-width:200px;border-radius:8px">`;
+        }
+      });
+    }
+
+    // ========== Toast ==========
+    function toast(msg, success) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + (success ? 'success' : '');
+      setTimeout(() => t.classList.add('show'), 10);
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

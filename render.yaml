@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: love-site
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ADMIN_PASSWORD
+        value: runxin2025
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /opt/render/project/src/data
+      - key: UPLOAD_DIR
+        value: /opt/render/project/src/uploads
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
