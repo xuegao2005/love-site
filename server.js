@@ -13,6 +13,8 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const DATA_FILE = path.join(DATA_DIR, 'site.json');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'yirunxin';
 
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(UPLOAD_DIR));
