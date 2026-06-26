@@ -599,17 +599,17 @@ body {
 .notes-empty-hint { font-size: 0.85rem; color: #bbb; margin-top: 8px; }
 
 .note-card {
-  width: 180px;
-  min-height: 140px;
-  padding: 20px 18px;
-  border-radius: 4px;
+  width: 200px;
+  min-height: 160px;
+  padding: 24px 20px;
+  border-radius: 8px;
   position: relative;
-  box-shadow: 3px 4px 12px rgba(0,0,0,0.1), 1px 2px 4px rgba(0,0,0,0.06);
+  box-shadow: 3px 4px 14px rgba(0,0,0,0.1), 1px 2px 6px rgba(0,0,0,0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: default;
   font-family: var(--font-cute);
   font-size: 0.95rem;
-  line-height: 1.8;
+  line-height: 1.9;
   color: #555;
   word-break: break-word;
 }
