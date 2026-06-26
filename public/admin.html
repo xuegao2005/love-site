@@ -616,6 +616,7 @@
 
       const formData = new FormData();
       formData.append('file', file);
+      toast('上传中...');
       fetch('/api/admin/upload', {
         method: 'POST',
         headers: { 'x-admin-token': token },
@@ -623,13 +624,24 @@
       })
       .then(r => r.json())
       .then(data => {
+        if (data.error) {
+          toast('上传失败: ' + data.error);
+          return;
+        }
         if (data.url) {
           document.getElementById('uploadResult').innerHTML = `
             <p style="color:#27ae60">上传成功！</p>
             <p>链接：<input value="${data.url}" readonly style="width:100%;padding:6px;border:1px solid #eee;border-radius:6px;margin-top:4px" onclick="this.select()"></p>
           `;
-          document.getElementById('uploadPreview').innerHTML = `<img src="${data.url}" style="max-width:200px;border-radius:8px">`;
+          if (file.type.startsWith('image/')) {
+            document.getElementById('uploadPreview').innerHTML = `<img src="${data.url}" style="max-width:200px;border-radius:8px">`;
+          } else if (file.type.startsWith('audio/')) {
+            document.getElementById('uploadPreview').innerHTML = `<audio controls src="${data.url}" style="margin-top:8px"></audio>`;
+          }
         }
+      })
+      .catch(err => {
+        toast('上传失败: ' + err.message);
       });
     }
 
