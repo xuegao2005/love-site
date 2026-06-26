@@ -594,12 +594,13 @@
       return `
         <h3>📷 上传文件</h3>
         <div class="card">
-          <h4>上传图片</h4>
-          <p style="color:#888;font-size:0.9rem;margin-bottom:16px">上传聊天截图或其他图片，上传后复制链接粘贴到对应位置</p>
-          <input type="file" id="uploadFile" accept="image/*" style="margin-bottom:12px">
+          <h4>上传文件</h4>
+          <p style="color:#888;font-size:0.9rem;margin-bottom:16px">上传图片或音乐文件，上传后复制链接粘贴到对应位置</p>
+          <input type="file" id="uploadFile" accept="image/*,audio/*" style="margin-bottom:12px">
           <button class="btn btn-primary btn-sm" onclick="uploadFile()">📤 上传</button>
           <div id="uploadResult" style="margin-top:12px;font-size:0.9rem"></div>
           <div id="uploadPreview" style="margin-top:12px"></div>
+          <p style="color:#888;font-size:0.75rem;margin-top:8px">支持 jpg/png/gif/webp/mp3/m4a/wav</p>
         </div>
         <div class="card">
           <h4>已上传文件</h4>
