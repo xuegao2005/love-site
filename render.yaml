@@ -12,7 +12,7 @@ services:
       - key: DATA_DIR
         value: /opt/render/project/src/data
       - key: UPLOAD_DIR
-        value: /opt/render/project/src/uploads
+        value: /opt/render/project/src/data/uploads
     disk:
       name: data
       mountPath: /opt/render/project/src/data
