@@ -170,7 +170,8 @@
 
     let w, h;
     const particles = [];
-    const maxParticles = 80;
+    const shootingStars = [];
+    const maxParticles = 100;
     let mouseX = -1000, mouseY = -1000;
 
     function resize() {
@@ -179,20 +180,42 @@
     }
 
     function createParticle() {
+      const colors = ['#FF6B6B', '#FFD93D', '#FFB8B8', '#FFA07A', '#FFE4B5', '#DDA0DD'];
       return {
         x: Math.random() * w,
         y: Math.random() * h,
         size: Math.random() * 3 + 1,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.5 + 0.2,
-        color: Math.random() > 0.5 ? '#FF6B6B' : '#FFD93D',
+        speedX: (Math.random() - 0.5) * 0.4,
+        speedY: (Math.random() - 0.5) * 0.4,
+        opacity: Math.random() * 0.6 + 0.2,
+        color: colors[Math.floor(Math.random() * colors.length)],
         phase: Math.random() * Math.PI * 2,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+      };
+    }
+
+    function createShootingStar() {
+      return {
+        x: Math.random() * w * 0.8,
+        y: Math.random() * h * 0.3,
+        len: Math.random() * 80 + 40,
+        speed: Math.random() * 6 + 4,
+        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+        opacity: 0,
+        life: 0,
+        maxLife: Math.random() * 0.5 + 0.5,
+        delay: Math.random() * 15,
       };
     }
 
     for (let i = 0; i < maxParticles; i++) {
       particles.push(createParticle());
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const star = createShootingStar();
+      star.delay = i * 4 + Math.random() * 5;
+      shootingStars.push(star);
     }
 
     window.addEventListener('mousemove', e => {
@@ -205,32 +228,48 @@
       mouseY = e.touches[0].clientY + window.scrollY;
     });
 
+    let time = 0;
+
     function animate() {
+      time += 0.016;
       ctx.clearRect(0, 0, w, h);
+
+      // Draw and update particles
       particles.forEach(p => {
         p.x += p.speedX;
         p.y += p.speedY;
-        p.phase += 0.01;
+        p.phase += p.twinkleSpeed;
 
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10;
+        if (p.y > h + 10) p.y = -10;
 
         const dx = mouseX - p.x;
         const dy = mouseY - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          p.x -= dx * 0.01;
-          p.y -= dy * 0.01;
+        if (dist < 140) {
+          p.x -= dx * 0.015;
+          p.y -= dy * 0.015;
         }
 
-        const pulse = Math.sin(p.phase) * 0.3 + 0.7;
+        const twinkle = Math.sin(p.phase) * 0.5 + 0.5;
+        const size = p.size * (twinkle * 0.5 + 0.75);
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * pulse, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.opacity * pulse;
+        ctx.globalAlpha = p.opacity * (twinkle * 0.4 + 0.6);
         ctx.fill();
+
+        // Draw glow for brighter particles
+        if (twinkle > 0.7 && p.opacity > 0.4) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, size * 2, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.opacity * 0.08;
+          ctx.fill();
+        }
       });
 
       // Draw connection lines for nearby particles
@@ -239,16 +278,59 @@
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
+          if (dist < 110) {
+            const alpha = (1 - dist / 110) * 0.06;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = 'rgba(255,107,107,0.06)';
+            ctx.strokeStyle = `rgba(255,107,107,${alpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
       }
+
+      // Draw shooting stars
+      shootingStars.forEach(star => {
+        if (time < star.delay) return;
+        star.life += 0.016;
+        if (star.life > star.maxLife) {
+          star.life = 0;
+          star.x = Math.random() * w * 0.7;
+          star.y = Math.random() * h * 0.3;
+          star.delay = time + Math.random() * 8 + 4;
+          star.len = Math.random() * 80 + 40;
+          star.speed = Math.random() * 6 + 4;
+          return;
+        }
+
+        const progress = star.life / star.maxLife;
+        star.x += Math.cos(star.angle) * star.speed;
+        star.y += Math.sin(star.angle) * star.speed;
+
+        const tailX = star.x - Math.cos(star.angle) * star.len;
+        const tailY = star.y - Math.sin(star.angle) * star.len;
+
+        const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
+        gradient.addColorStop(0, 'rgba(255,255,255,0)');
+        gradient.addColorStop(0.3, 'rgba(255,255,255,0.1)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0.7)');
+
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = progress < 0.15 ? progress / 0.15 : (1 - progress) / 0.85;
+        ctx.stroke();
+
+        // Star head glow
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = (progress < 0.15 ? progress / 0.15 : (1 - progress) / 0.85) * 0.8;
+        ctx.fill();
+      });
 
       ctx.globalAlpha = 1;
       requestAnimationFrame(animate);
@@ -258,7 +340,6 @@
     resize();
     animate();
 
-    // Update canvas height on DOM change
     const observer = new ResizeObserver(() => resize());
     observer.observe(document.body);
   }
