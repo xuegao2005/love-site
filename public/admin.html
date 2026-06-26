@@ -186,6 +186,7 @@
         <a href="#" data-page="site" onclick="switchPage('site')">⚙️ 网站设置</a>
         <a href="#" data-page="sections" onclick="switchPage('sections')">📖 故事章节</a>
         <a href="#" data-page="chats" onclick="switchPage('chats')">💬 聊天记录</a>
+        <a href="#" data-page="notes" onclick="switchPage('notes')">💌 便签管理</a>
         <a href="#" data-page="upload" onclick="switchPage('upload')">📷 上传文件</a>
       </nav>
       <div class="admin-content" id="adminContent"></div>
@@ -277,6 +278,7 @@
         case 'site': c.innerHTML = renderSiteSettings(); break;
         case 'sections': c.innerHTML = renderSections(); break;
         case 'chats': c.innerHTML = renderChats(); break;
+        case 'notes': c.innerHTML = renderNotes(); break;
         case 'upload': c.innerHTML = renderUpload(); break;
       }
     }
@@ -285,6 +287,7 @@
     function renderDashboard() {
       const chats = allData.chats || [];
       const sections = allData.sections || [];
+      const notes = allData.notes || [];
       const herMsgs = chats.filter(c => c.sender === 'her').length;
       const himMsgs = chats.filter(c => c.sender === 'him').length;
       return `
@@ -292,6 +295,7 @@
         <div class="stats-grid">
           <div class="stat-card"><div class="num">${sections.length}</div><div class="label">故事章节</div></div>
           <div class="stat-card"><div class="num">${chats.length}</div><div class="label">聊天记录</div></div>
+          <div class="stat-card"><div class="num">${notes.length}</div><div class="label">便签</div></div>
           <div class="stat-card"><div class="num">${herMsgs}</div><div class="label">她的消息</div></div>
           <div class="stat-card"><div class="num">${himMsgs}</div><div class="label">你的消息</div></div>
         </div>
@@ -588,6 +592,96 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages })
       }).then(r => { toast(`成功导入 ${r.count} 条消息`, true); loadAllData(); });
+    }
+
+    // ========== Notes Management ==========
+    function renderNotes() {
+      const notes = allData.notes || [];
+      let html = `<h3>💌 便签管理</h3>`;
+      if (notes.length === 0) {
+        html += `<div class="empty-state"><div class="icon">💌</div><p>还没有便签</p></div>`;
+      } else {
+        html += `<div id="noteList">`;
+        notes.forEach(note => {
+          const colors = { pink: '粉色', yellow: '黄色', blue: '蓝色', green: '绿色', purple: '紫色' };
+          html += `
+            <div class="section-item" data-id="${note.id}">
+              <div class="section-info">
+                <div class="title">${esc(note.content)} <span class="badge badge-active">${colors[note.color] || note.color}</span></div>
+                <div class="meta">${note.content.length} 个字</div>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-outline btn-sm" onclick="editNote('${note.id}')">编辑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">删除</button>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `
+        <div class="card" id="noteFormCard" style="display:none">
+          <h4 id="noteFormTitle">添加便签</h4>
+          <form id="noteForm" onsubmit="saveNote(event)">
+            <input type="hidden" name="id" value="">
+            <div class="form-group"><label>内容</label><textarea name="content" rows="3" required placeholder="写一句想说的话..."></textarea></div>
+            <div class="form-group"><label>颜色</label><select name="color">
+              <option value="note-pink">粉色</option>
+              <option value="note-yellow">黄色</option>
+              <option value="note-blue">蓝色</option>
+              <option value="note-green">绿色</option>
+              <option value="note-purple">紫色</option>
+            </select></div>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">💾 保存</button>
+              <button type="button" class="btn btn-outline" onclick="cancelNoteForm()">取消</button>
+            </div>
+          </form>
+        </div>
+        <button class="btn btn-primary" onclick="newNote()" style="margin-top:12px">+ 添加便签</button>
+      `;
+      return html;
+    }
+
+    function newNote() {
+      document.getElementById('noteFormCard').style.display = 'block';
+      document.getElementById('noteFormTitle').textContent = '添加便签';
+      document.getElementById('noteForm').reset();
+      document.getElementById('noteForm').querySelector('[name=id]').value = '';
+      document.getElementById('noteFormCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function editNote(id) {
+      const note = (allData.notes || []).find(n => n.id === id);
+      if (!note) return;
+      document.getElementById('noteFormCard').style.display = 'block';
+      document.getElementById('noteFormTitle').textContent = '编辑便签';
+      const f = document.getElementById('noteForm');
+      f.querySelector('[name=id]').value = note.id;
+      f.querySelector('[name=content]').value = note.content;
+      f.querySelector('[name=color]').value = note.color;
+      document.getElementById('noteFormCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelNoteForm() {
+      document.getElementById('noteFormCard').style.display = 'none';
+    }
+
+    function saveNote(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      const id = data.id;
+      delete data.id;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/admin/notes/${id}` : '/api/admin/notes';
+      api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(() => { toast('保存成功', true); loadAllData(); cancelNoteForm(); });
+    }
+
+    function deleteNote(id) {
+      if (!confirm('确定删除这个便签？')) return;
+      api(`/api/admin/notes/${id}`, { method: 'DELETE' })
+        .then(() => { toast('已删除'); loadAllData(); });
     }
 
     function renderUpload() {

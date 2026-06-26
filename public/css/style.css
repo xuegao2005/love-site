@@ -783,6 +783,88 @@ body {
   .music-progress { width: 100px; }
 }
 
+/* ========== Notes Wall ========== */
+.notes-section {
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(255,214,157,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,184,184,0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #fdfaf3 0%, #faf5ec 50%, #f8f3ec 100%);
+}
+
+.notes-wall {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 40px;
+  padding: 20px;
+}
+.notes-empty {
+  text-align: center; padding: 60px 20px; color: var(--text-light); width: 100%;
+}
+.notes-empty-icon { font-size: 3.5rem; margin-bottom: 16px; animation: emptyIconFloat 3s ease-in-out infinite; }
+.notes-empty-hint { font-size: 0.85rem; color: #bbb; margin-top: 8px; }
+
+.note-card {
+  width: 180px;
+  min-height: 140px;
+  padding: 20px 18px;
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 3px 4px 12px rgba(0,0,0,0.1), 1px 2px 4px rgba(0,0,0,0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+  font-family: var(--font-cute);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #555;
+  word-break: break-word;
+}
+
+.note-card:hover {
+  transform: rotate(0deg) scale(1.06) !important;
+  box-shadow: 5px 8px 20px rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+/* Pushpin */
+.note-card::before {
+  content: '📌';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-10deg);
+  font-size: 1.2rem;
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.15));
+}
+
+/* Note colors */
+.note-pink {
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe8e8 100%);
+  transform: rotate(-3deg);
+}
+.note-yellow {
+  background: linear-gradient(135deg, #fffde8 0%, #fff9c4 100%);
+  transform: rotate(2deg);
+}
+.note-blue {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+  transform: rotate(-2deg);
+}
+.note-green {
+  background: linear-gradient(135deg, #f0fff0 0%, #e8ffe8 100%);
+  transform: rotate(3deg);
+}
+.note-purple {
+  background: linear-gradient(135deg, #fdf0ff 0%, #f8e8ff 100%);
+  transform: rotate(-1deg);
+}
+
+@media (max-width: 640px) {
+  .notes-wall { gap: 16px; padding: 10px; }
+  .note-card { width: 150px; min-height: 120px; padding: 16px 14px; font-size: 0.85rem; }
+}
+
 /* ========== Ending Section Enhanced ========== */
 .ending {
   background: linear-gradient(135deg, #0d0d1f 0%, #1a1a2e 30%, #16213e 60%, #0f3460 100%);

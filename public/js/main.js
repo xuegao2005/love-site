@@ -9,6 +9,7 @@
       applySiteData();
       renderSections();
       renderChats();
+      renderNotes();
       renderProgressDots();
       initMusicPlayer();
     } catch (e) {
@@ -105,6 +106,26 @@
     container.scrollTop = container.scrollHeight;
   }
 
+  // ========== Render Notes Wall ==========
+  function renderNotes() {
+    const container = document.getElementById('notesWall');
+    const empty = document.getElementById('notesEmpty');
+    if (!siteData || !siteData.notes || siteData.notes.length === 0) {
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    const colors = ['note-pink', 'note-yellow', 'note-blue', 'note-green', 'note-purple'];
+    const html = siteData.notes.map(n => `
+      <div class="note-card ${n.color || colors[Math.floor(Math.random() * colors.length)]} reveal">
+        ${n.content}
+      </div>
+    `).join('');
+    container.innerHTML = html;
+    observeReveal();
+  }
+
   // ========== Progress Dots ==========
   let sectionIds = [];
 
@@ -114,7 +135,7 @@
     if (siteData && siteData.sections) {
       siteData.sections.forEach(s => sectionIds.push('section-' + s.id));
     }
-    sectionIds.push('section-chats', 'section-music', 'section-ending');
+    sectionIds.push('section-chats', 'section-music', 'section-notes', 'section-ending');
 
     dotsContainer.innerHTML = '';
     sectionIds.forEach((id, i) => {

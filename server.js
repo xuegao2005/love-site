@@ -68,6 +68,7 @@ function getDefaultData() {
       },
     ],
     chats: [],
+    notes: [],
     settings: {
       enableMusic: false,
       musicUrl: '',
@@ -122,6 +123,7 @@ app.get('/api/site', (req, res) => {
     site: data.site,
     sections: data.sections.filter(s => s.active).sort((a, b) => a.order - b.order),
     chats: data.chats,
+    notes: data.notes,
     settings: data.settings,
   });
 });
@@ -257,6 +259,43 @@ app.post('/api/admin/upload', authMiddleware, upload.single('file'), (req, res) 
 
 app.post('/api/admin/change-password', authMiddleware, (req, res) => {
   res.json({ error: '请通过环境变量 ADMIN_PASSWORD 修改密码' });
+});
+
+// --- Notes API ---
+app.get('/api/admin/notes', authMiddleware, (req, res) => {
+  const data = readData();
+  res.json(data.notes || []);
+});
+
+app.post('/api/admin/notes', authMiddleware, (req, res) => {
+  const data = readData();
+  const note = {
+    id: uuidv4(),
+    content: req.body.content || '',
+    color: req.body.color || 'pink',
+    order: (data.notes || []).length + 1,
+  };
+  if (!data.notes) data.notes = [];
+  data.notes.push(note);
+  writeData(data);
+  res.json({ success: true, note });
+});
+
+app.put('/api/admin/notes/:id', authMiddleware, (req, res) => {
+  const data = readData();
+  if (!data.notes) data.notes = [];
+  const idx = data.notes.findIndex(n => n.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: '便签不存在' });
+  Object.assign(data.notes[idx], req.body);
+  writeData(data);
+  res.json({ success: true, note: data.notes[idx] });
+});
+
+app.delete('/api/admin/notes/:id', authMiddleware, (req, res) => {
+  const data = readData();
+  data.notes = (data.notes || []).filter(n => n.id !== req.params.id);
+  writeData(data);
+  res.json({ success: true });
 });
 
 // --- 管理后台页面 ---
