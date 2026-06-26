@@ -132,7 +132,7 @@
 
   function renderMemorialCount() {
     if (!siteData || !siteData.settings) return;
-    const dateStr = siteData.settings.memorialDate || '2026-04-28';
+    const dateStr = siteData.settings.memorialDate || '2026-04-25';
     const startDate = new Date(dateStr + 'T00:00:00');
     if (isNaN(startDate.getTime())) return;
 
