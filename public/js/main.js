@@ -11,7 +11,6 @@
       renderNotes();
       renderMemorialCount();
       renderProgressDots();
-      initMusicPlayer();
     } catch (e) {
       console.error('加载数据失败:', e);
     }
@@ -123,7 +122,7 @@
     if (siteData && siteData.sections) {
       siteData.sections.forEach(s => sectionIds.push('section-' + s.id));
     }
-    sectionIds.push('section-music', 'section-memorial', 'section-notes', 'section-ending');
+    sectionIds.push('section-memorial', 'section-notes', 'section-ending');
 
     dotsContainer.innerHTML = '';
     sectionIds.forEach((id, i) => {
@@ -430,86 +429,4 @@
     window.addEventListener('scroll', updateProgress, { passive: true });
     updateProgress();
   });
-
-  // ========== Music Player (global scope for onclick) ==========
-  let musicAudio = null;
-  let musicRecord = null;
-  let musicProgressFill = null;
-  let musicTimeEl = null;
-  let musicPlayBtn = null;
-  let musicTitleEl = null;
-  let musicArtistEl = null;
-  let musicPlayer = null;
-  let musicEmpty = null;
-
-  function initMusicPlayer() {
-    musicAudio = document.getElementById('musicAudio');
-    musicRecord = document.getElementById('musicRecord');
-    musicProgressFill = document.getElementById('musicProgressFill');
-    musicTimeEl = document.getElementById('musicTime');
-    musicPlayBtn = document.getElementById('musicPlayBtn');
-    musicTitleEl = document.getElementById('musicTitle');
-    musicArtistEl = document.getElementById('musicArtist');
-    musicPlayer = document.getElementById('musicPlayer');
-    musicEmpty = document.getElementById('musicEmpty');
-
-    if (!musicAudio || !siteData || !siteData.settings) return;
-
-    if (siteData.settings.musicUrl) {
-      musicAudio.src = siteData.settings.musicUrl;
-      musicTitleEl.textContent = siteData.settings.musicTitle || '未知歌曲';
-      musicArtistEl.textContent = siteData.settings.musicArtist || '';
-      musicPlayer.style.display = '';
-      musicEmpty.style.display = 'none';
-    } else {
-      musicPlayer.style.display = 'none';
-      musicEmpty.style.display = 'block';
-      return;
-    }
-
-    musicAudio.addEventListener('timeupdate', () => {
-      if (musicAudio.duration) {
-        const pct = (musicAudio.currentTime / musicAudio.duration) * 100;
-        musicProgressFill.style.width = pct + '%';
-        const m = Math.floor(musicAudio.currentTime / 60);
-        const s = Math.floor(musicAudio.currentTime % 60);
-        musicTimeEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-      }
-    });
-
-    musicAudio.addEventListener('ended', () => {
-      musicRecord.classList.remove('playing');
-      musicRecord.classList.add('paused');
-      musicPlayBtn.querySelector('.play-icon').textContent = '▶';
-    });
-
-    // Click on progress bar to seek
-    document.getElementById('musicProgress').addEventListener('click', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const pct = (e.clientX - rect.left) / rect.width;
-      musicAudio.currentTime = pct * musicAudio.duration;
-    });
-
-    // Auto-play
-    if (siteData.settings.enableMusic && siteData.settings.musicUrl) {
-      musicAudio.play().catch(() => {});
-      musicRecord.classList.add('playing');
-      musicPlayBtn.querySelector('.play-icon').textContent = '⏸';
-    }
-  }
-
-  window.toggleMusic = function() {
-    if (!musicAudio) return;
-    if (musicAudio.paused) {
-      musicAudio.play();
-      musicRecord.classList.remove('paused');
-      musicRecord.classList.add('playing');
-      musicPlayBtn.querySelector('.play-icon').textContent = '⏸';
-    } else {
-      musicAudio.pause();
-      musicRecord.classList.remove('playing');
-      musicRecord.classList.add('paused');
-      musicPlayBtn.querySelector('.play-icon').textContent = '▶';
-    }
-  };
 })();

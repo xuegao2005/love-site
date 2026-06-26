@@ -93,14 +93,23 @@ function migrateData(data) {
 function readData() {
   try {
     if (fs.existsSync(DATA_FILE)) {
-      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      const data = JSON.parse(raw);
       if (migrateData(data)) {
         writeData(data);
         console.log('数据已迁移：2025 → 2026');
       }
       return data;
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    // Corrupted file: back it up, don't overwrite
+    console.error('读取数据失败，已备份原文件:', e.message);
+    try {
+      const backupFile = DATA_FILE + '.backup.' + Date.now();
+      fs.copyFileSync(DATA_FILE, backupFile);
+      console.log('备份已保存到:', backupFile);
+    } catch (_) {}
+  }
   const d = getDefaultData();
   writeData(d);
   return d;

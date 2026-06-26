@@ -320,21 +320,6 @@
           <p style="color:#888;font-size:0.8rem;margin:-8px 0 16px">你们重新联系的那天，格式：年-月-日</p>
           <button type="submit" class="btn btn-primary">💾 保存设置</button>
         </form>
-
-        <h3 style="margin-top:32px">🎵 音乐设置</h3>
-        <form id="musicForm" class="card" onsubmit="saveMusicSettings(event)">
-          <div class="form-group">
-            <label>
-              <input type="checkbox" name="enableMusic" ${st.enableMusic ? 'checked' : ''}>
-              启用音乐
-            </label>
-          </div>
-          <div class="form-group"><label>音乐标题</label><input name="musicTitle" value="${esc(st.musicTitle || '')}" placeholder="如：慢慢喜欢你"></div>
-          <div class="form-group"><label>歌手</label><input name="musicArtist" value="${esc(st.musicArtist || '')}" placeholder="如：莫文蔚"></div>
-          <div class="form-group"><label>音乐链接</label><input name="musicUrl" value="${esc(st.musicUrl || '')}" placeholder="MP3 直链，可先上传再粘贴"></div>
-          <p style="color:#888;font-size:0.8rem;margin-bottom:12px">先上传 MP3 文件获取链接，再把链接粘贴到这里</p>
-          <button type="submit" class="btn btn-primary">💾 保存音乐设置</button>
-        </form>
       `;
     }
 
@@ -354,18 +339,6 @@
           }
         })
         .then(() => { toast('设置已保存', true); loadAllData(); });
-    }
-
-    function saveMusicSettings(e) {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const data = {};
-      data.enableMusic = fd.get('enableMusic') === 'on';
-      data.musicUrl = fd.get('musicUrl') || '';
-      data.musicTitle = fd.get('musicTitle') || '';
-      data.musicArtist = fd.get('musicArtist') || '';
-      api('/api/admin/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-        .then(() => { toast('音乐设置已保存', true); loadAllData(); });
     }
 
     function renderSections() {
