@@ -10,6 +10,7 @@
       renderSections();
       renderChats();
       renderNotes();
+      renderMemorialCount();
       renderProgressDots();
       initMusicPlayer();
     } catch (e) {
@@ -126,6 +127,39 @@
     observeReveal();
   }
 
+  // ========== Memorial Day Counter ==========
+  let memorialInterval = null;
+
+  function renderMemorialCount() {
+    if (!siteData || !siteData.settings) return;
+    const dateStr = siteData.settings.memorialDate || '2026-04-28';
+    const startDate = new Date(dateStr + 'T00:00:00');
+    if (isNaN(startDate.getTime())) return;
+
+    const daysEl = document.getElementById('memorialDays');
+    const dateTextEl = document.getElementById('memorialDateText');
+    if (!daysEl) return;
+
+    function update() {
+      const now = new Date();
+      const diff = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff >= 0) {
+        daysEl.textContent = diff;
+      }
+    }
+
+    if (dateTextEl) {
+      const y = startDate.getFullYear();
+      const m = startDate.getMonth() + 1;
+      const d = startDate.getDate();
+      dateTextEl.textContent = `从 ${y}年${m}月${d}日 起`;
+    }
+
+    update();
+    if (memorialInterval) clearInterval(memorialInterval);
+    memorialInterval = setInterval(update, 1000);
+  }
+
   // ========== Progress Dots ==========
   let sectionIds = [];
 
@@ -135,7 +169,7 @@
     if (siteData && siteData.sections) {
       siteData.sections.forEach(s => sectionIds.push('section-' + s.id));
     }
-    sectionIds.push('section-chats', 'section-music', 'section-notes', 'section-ending');
+    sectionIds.push('section-chats', 'section-music', 'section-memorial', 'section-notes', 'section-ending');
 
     dotsContainer.innerHTML = '';
     sectionIds.forEach((id, i) => {

@@ -74,6 +74,7 @@ function getDefaultData() {
       musicUrl: '',
       musicTitle: '',
       musicArtist: '',
+      memorialDate: '2026-04-28',
     }
   };
 }
