@@ -185,7 +185,6 @@
         <a href="#" data-page="dashboard" class="active" onclick="switchPage('dashboard')">📊 概览</a>
         <a href="#" data-page="site" onclick="switchPage('site')">⚙️ 网站设置</a>
         <a href="#" data-page="sections" onclick="switchPage('sections')">📖 故事章节</a>
-        <a href="#" data-page="chats" onclick="switchPage('chats')">💬 聊天记录</a>
         <a href="#" data-page="notes" onclick="switchPage('notes')">💌 便签管理</a>
         <a href="#" data-page="upload" onclick="switchPage('upload')">📷 上传文件</a>
       </nav>
@@ -277,7 +276,6 @@
         case 'dashboard': c.innerHTML = renderDashboard(); break;
         case 'site': c.innerHTML = renderSiteSettings(); break;
         case 'sections': c.innerHTML = renderSections(); break;
-        case 'chats': c.innerHTML = renderChats(); break;
         case 'notes': c.innerHTML = renderNotes(); break;
         case 'upload': c.innerHTML = renderUpload(); break;
       }
@@ -285,19 +283,13 @@
 
     // ========== Pages ==========
     function renderDashboard() {
-      const chats = allData.chats || [];
       const sections = allData.sections || [];
       const notes = allData.notes || [];
-      const herMsgs = chats.filter(c => c.sender === 'her').length;
-      const himMsgs = chats.filter(c => c.sender === 'him').length;
       return `
         <h3>📊 概览</h3>
         <div class="stats-grid">
           <div class="stat-card"><div class="num">${sections.length}</div><div class="label">故事章节</div></div>
-          <div class="stat-card"><div class="num">${chats.length}</div><div class="label">聊天记录</div></div>
           <div class="stat-card"><div class="num">${notes.length}</div><div class="label">便签</div></div>
-          <div class="stat-card"><div class="num">${herMsgs}</div><div class="label">她的消息</div></div>
-          <div class="stat-card"><div class="num">${himMsgs}</div><div class="label">你的消息</div></div>
         </div>
         <div class="card">
           <h4>快速操作</h4>
@@ -468,142 +460,6 @@
       if (!confirm('确定删除这个章节？')) return;
       api(`/api/admin/sections/${id}`, { method: 'DELETE' })
         .then(() => { toast('已删除'); loadAllData(); });
-    }
-
-    function renderChats() {
-      const chats = allData.chats || [];
-      let html = `<h3>💬 聊天记录</h3><div class="card"><p style="color:#888;font-size:0.9rem">支持批量导入。格式：每行一条记录，用 | 分隔。<br>格式：<b>发送方(her/him) | 内容 | 日期 | 备注(可选)</b></p>
-        <textarea id="batchInput" rows="4" placeholder="示例：&#10;her | 好久不见！最近怎么样 | 2026-04-28 10:30 | 她主动联系了我&#10;him | 哇！好久不见！！我很好！ | 2026-04-28 10:32"></textarea>
-        <button class="btn btn-primary btn-sm" onclick="batchImport()" style="margin-top:8px">📥 批量导入</button>
-      </div>`;
-
-      if (chats.length === 0) {
-        html += `<div class="empty-state"><div class="icon">💬</div><p>还没有聊天记录</p></div>`;
-      } else {
-        html += `<div id="chatList">`;
-        chats.forEach(chat => {
-          const d = new Date(chat.timestamp);
-          const dateStr = d.toLocaleDateString('zh-CN');
-          html += `
-            <div class="chat-item" data-id="${chat.id}">
-              <div class="chat-info">
-                <div class="msg">
-                  <span class="badge ${chat.sender === 'her' ? 'badge-her' : 'badge-him'}">${chat.sender === 'her' ? '她' : '我'}</span>
-                  ${chat.favorite ? '❤️ ' : ''}${esc(chat.content).slice(0, 60)}${chat.content.length > 60 ? '...' : ''}
-                </div>
-                <div class="meta">${dateStr} ${chat.note ? '· ' + chat.note : ''}</div>
-              </div>
-              <div class="chat-actions">
-                <button class="btn btn-outline btn-sm" onclick="editChat('${chat.id}')">编辑</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteChat('${chat.id}')">删除</button>
-              </div>
-            </div>`;
-        });
-        html += `</div>`;
-      }
-
-      html += `
-        <div class="card" id="chatFormCard" style="display:none">
-          <h4 id="chatFormTitle">添加消息</h4>
-          <form id="chatForm" onsubmit="saveChat(event)">
-            <input type="hidden" name="id" value="">
-            <div class="form-group"><label>发送方</label><select name="sender"><option value="her">她 (易润欣)</option><option value="him">我 (薛高)</option></select></div>
-            <div class="form-group"><label>内容</label><textarea name="content" rows="3" required></textarea></div>
-            <div class="form-row">
-              <div class="form-group"><label>时间</label><input type="datetime-local" name="timestamp"></div>
-              <div class="form-group"><label>备注（显示在气泡上方）</label><input name="note" placeholder="如：她主动联系我"></div>
-            </div>
-            <div class="form-group"><label>图片链接（可选）</label><input name="image" placeholder="上传后粘贴链接"></div>
-            <div class="form-group"><label><input type="checkbox" name="favorite"> 标为收藏 ❤️</label></div>
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary">💾 保存</button>
-              <button type="button" class="btn btn-outline" onclick="cancelChat()">取消</button>
-            </div>
-          </form>
-        </div>
-        <button class="btn btn-primary" onclick="newChat()" style="margin-top:12px">+ 添加消息</button>
-      `;
-      return html;
-    }
-
-    function newChat() {
-      const card = document.getElementById('chatFormCard');
-      card.style.display = 'block';
-      document.getElementById('chatFormTitle').textContent = '添加消息';
-      const f = document.getElementById('chatForm');
-      f.reset();
-      f.querySelector('[name=id]').value = '';
-      const now = new Date();
-      f.querySelector('[name=timestamp]').value = now.toISOString().slice(0, 16);
-      card.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function editChat(id) {
-      const chat = allData.chats.find(c => c.id === id);
-      if (!chat) return;
-      const card = document.getElementById('chatFormCard');
-      card.style.display = 'block';
-      document.getElementById('chatFormTitle').textContent = '编辑消息';
-      const f = document.getElementById('chatForm');
-      f.querySelector('[name=id]').value = chat.id;
-      f.querySelector('[name=sender]').value = chat.sender;
-      f.querySelector('[name=content]').value = chat.content;
-      f.querySelector('[name=timestamp]').value = new Date(chat.timestamp).toISOString().slice(0, 16);
-      f.querySelector('[name=note]').value = chat.note || '';
-      f.querySelector('[name=image]').value = chat.image || '';
-      f.querySelector('[name=favorite]').checked = chat.favorite;
-      card.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function cancelChat() {
-      document.getElementById('chatFormCard').style.display = 'none';
-    }
-
-    function saveChat(e) {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const data = Object.fromEntries(fd.entries());
-      data.favorite = fd.get('favorite') === 'on';
-      if (data.timestamp) data.timestamp = new Date(data.timestamp).toISOString();
-      const id = data.id;
-      delete data.id;
-
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? `/api/admin/chats/${id}` : '/api/admin/chats';
-
-      api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-        .then(() => { toast('保存成功', true); loadAllData(); cancelChat(); });
-    }
-
-    function deleteChat(id) {
-      if (!confirm('确定删除这条消息？')) return;
-      api(`/api/admin/chats/${id}`, { method: 'DELETE' })
-        .then(() => { toast('已删除'); loadAllData(); });
-    }
-
-    function batchImport() {
-      const text = document.getElementById('batchInput').value.trim();
-      if (!text) return toast('请粘贴聊天记录');
-      const lines = text.split('\n').filter(l => l.trim());
-      const messages = [];
-      for (const line of lines) {
-        const parts = line.split('|').map(s => s.trim());
-        if (parts.length < 3) continue;
-        const [sender, content, timestamp, note] = parts;
-        if (sender !== 'her' && sender !== 'him') continue;
-        messages.push({
-          sender,
-          content,
-          timestamp: new Date(timestamp).toISOString(),
-          note: note || '',
-        });
-      }
-      if (messages.length === 0) return toast('没有解析到有效消息，检查格式');
-      api('/api/admin/chats/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages })
-      }).then(r => { toast(`成功导入 ${r.count} 条消息`, true); loadAllData(); });
     }
 
     // ========== Notes Management ==========

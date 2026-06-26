@@ -8,7 +8,6 @@
       siteData = await res.json();
       applySiteData();
       renderSections();
-      renderChats();
       renderNotes();
       renderMemorialCount();
       renderProgressDots();
@@ -60,51 +59,6 @@
     });
 
     observeReveal();
-  }
-
-  // ========== Render Chat Wall ==========
-  function renderChats() {
-    const container = document.getElementById('chatContainer');
-    const empty = document.getElementById('chatEmpty');
-    if (!siteData || !siteData.chats || siteData.chats.length === 0) {
-      if (empty) empty.style.display = 'block';
-      return;
-    }
-    if (empty) empty.style.display = 'none';
-
-    const chats = siteData.chats;
-    let html = '';
-    let lastDate = '';
-
-    chats.forEach(msg => {
-      const d = new Date(msg.timestamp);
-      const dateStr = d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-      const timeStr = d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-
-      if (dateStr !== lastDate) {
-        html += `<div class="chat-date-divider"><span>${dateStr}</span></div>`;
-        lastDate = dateStr;
-      }
-
-      const senderClass = msg.sender === 'him' ? 'him' : 'her';
-      const avatar = msg.sender === 'him' ? '🧑' : '👧';
-
-      html += `
-        <div class="chat-msg ${senderClass}">
-          <div class="chat-avatar">${avatar}</div>
-          <div class="chat-bubble-wrap">
-            ${msg.note ? `<span class="chat-note">${msg.note}</span>` : ''}
-            ${msg.favorite ? `<span class="chat-favorite">❤️</span>` : ''}
-            <div class="chat-bubble">${msg.content}</div>
-            ${msg.image ? `<img class="chat-image" src="${msg.image}" alt="聊天图片" loading="lazy">` : ''}
-            <span class="chat-time">${timeStr}</span>
-          </div>
-        </div>
-      `;
-    });
-
-    container.innerHTML = html;
-    container.scrollTop = container.scrollHeight;
   }
 
   // ========== Render Notes Wall ==========
@@ -169,7 +123,7 @@
     if (siteData && siteData.sections) {
       siteData.sections.forEach(s => sectionIds.push('section-' + s.id));
     }
-    sectionIds.push('section-chats', 'section-music', 'section-memorial', 'section-notes', 'section-ending');
+    sectionIds.push('section-music', 'section-memorial', 'section-notes', 'section-ending');
 
     dotsContainer.innerHTML = '';
     sectionIds.forEach((id, i) => {
