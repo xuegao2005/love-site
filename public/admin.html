@@ -186,7 +186,8 @@
         <a href="#" data-page="site" onclick="switchPage('site')">⚙️ 网站设置</a>
         <a href="#" data-page="sections" onclick="switchPage('sections')">📖 故事章节</a>
         <a href="#" data-page="notes" onclick="switchPage('notes')">💌 便签管理</a>
-        <a href="#" data-page="upload" onclick="switchPage('upload')">📷 上传文件</a>
+        <a href="#" data-page="upload-music" onclick="switchPage('upload-music')">🎵 上传音乐</a>
+        <a href="#" data-page="upload-image" onclick="switchPage('upload-image')">📷 上传图片</a>
       </nav>
       <div class="admin-content" id="adminContent"></div>
     </div>
@@ -277,7 +278,8 @@
         case 'site': c.innerHTML = renderSiteSettings(); break;
         case 'sections': c.innerHTML = renderSections(); break;
         case 'notes': c.innerHTML = renderNotes(); break;
-        case 'upload': c.innerHTML = renderUpload(); break;
+        case 'upload-music': c.innerHTML = renderUploadMusic(); break;
+        case 'upload-image': c.innerHTML = renderUploadImage(); break;
       }
     }
 
@@ -552,27 +554,38 @@
         .then(() => { toast('已删除'); loadAllData(); });
     }
 
-    function renderUpload() {
+    function renderUploadMusic() {
       return `
-        <h3>📷 上传文件</h3>
+        <h3>🎵 上传音乐</h3>
         <div class="card">
-          <h4>上传文件</h4>
-          <p style="color:#888;font-size:0.9rem;margin-bottom:16px">上传图片或音乐文件，上传后复制链接粘贴到对应位置</p>
-          <input type="file" id="uploadFile" accept="image/*,audio/*" style="margin-bottom:12px">
-          <button class="btn btn-primary btn-sm" onclick="uploadFile()">📤 上传</button>
-          <div id="uploadResult" style="margin-top:12px;font-size:0.9rem"></div>
-          <div id="uploadPreview" style="margin-top:12px"></div>
-          <p style="color:#888;font-size:0.75rem;margin-top:8px">支持 jpg/png/gif/webp/mp3/m4a/wav</p>
-        </div>
-        <div class="card">
-          <h4>已上传文件</h4>
-          <p style="color:#888;font-size:0.85rem">文件存储在服务器 uploads/ 目录下</p>
+          <h4>上传歌曲</h4>
+          <p style="color:#888;font-size:0.9rem;margin-bottom:16px">上传 mp3 文件，上传后复制链接粘贴到「网站设置 → 音乐设置」</p>
+          <input type="file" id="uploadMusicFile" accept="audio/*" style="margin-bottom:12px">
+          <button class="btn btn-primary btn-sm" onclick="uploadMusic()">📤 上传</button>
+          <div id="uploadMusicResult" style="margin-top:12px;font-size:0.9rem"></div>
+          <div id="uploadMusicPreview" style="margin-top:12px"></div>
+          <p style="color:#888;font-size:0.75rem;margin-top:8px">支持 mp3 / m4a / wav，最大 20MB</p>
         </div>
       `;
     }
 
-    function uploadFile() {
-      const fileInput = document.getElementById('uploadFile');
+    function renderUploadImage() {
+      return `
+        <h3>📷 上传图片</h3>
+        <div class="card">
+          <h4>上传图片</h4>
+          <p style="color:#888;font-size:0.9rem;margin-bottom:16px">上传图片后复制链接，粘贴到故事章节、便签等任意需要图片的地方</p>
+          <input type="file" id="uploadImageFile" accept="image/*" style="margin-bottom:12px">
+          <button class="btn btn-primary btn-sm" onclick="uploadImage()">📤 上传</button>
+          <div id="uploadImageResult" style="margin-top:12px;font-size:0.9rem"></div>
+          <div id="uploadImagePreview" style="margin-top:12px"></div>
+          <p style="color:#888;font-size:0.75rem;margin-top:8px">支持 jpg / png / gif / webp</p>
+        </div>
+      `;
+    }
+
+    function doUpload(fileInputId, resultId, previewId) {
+      const fileInput = document.getElementById(fileInputId);
       const file = fileInput.files[0];
       if (!file) return toast('请选择文件');
 
@@ -591,14 +604,14 @@
           return;
         }
         if (data.url) {
-          document.getElementById('uploadResult').innerHTML = `
+          document.getElementById(resultId).innerHTML = `
             <p style="color:#27ae60">上传成功！</p>
             <p>链接：<input value="${data.url}" readonly style="width:100%;padding:6px;border:1px solid #eee;border-radius:6px;margin-top:4px" onclick="this.select()"></p>
           `;
           if (file.type.startsWith('image/')) {
-            document.getElementById('uploadPreview').innerHTML = `<img src="${data.url}" style="max-width:200px;border-radius:8px">`;
+            document.getElementById(previewId).innerHTML = `<img src="${data.url}" style="max-width:250px;border-radius:8px;margin-top:8px">`;
           } else if (file.type.startsWith('audio/')) {
-            document.getElementById('uploadPreview').innerHTML = `<audio controls src="${data.url}" style="margin-top:8px"></audio>`;
+            document.getElementById(previewId).innerHTML = `<audio controls src="${data.url}" style="margin-top:8px;width:100%"></audio>`;
           }
         }
       })
@@ -606,6 +619,9 @@
         toast('上传失败: ' + err.message);
       });
     }
+
+    function uploadMusic() { doUpload('uploadMusicFile', 'uploadMusicResult', 'uploadMusicPreview'); }
+    function uploadImage() { doUpload('uploadImageFile', 'uploadImageResult', 'uploadImagePreview'); }
 
     // ========== Toast ==========
     function toast(msg, success) {
