@@ -150,6 +150,63 @@
     });
   }
 
+  // ========== Quick Navigation ==========
+  function initQuickNav() {
+    const nav = document.getElementById('quickNav');
+    const cover = document.getElementById('section-cover');
+    if (!nav || !cover) return;
+
+    const navBtns = nav.querySelectorAll('.nav-btn');
+
+    // Show nav after scrolling past cover
+    function updateNavVisibility() {
+      const coverBottom = cover.getBoundingClientRect().bottom;
+      if (coverBottom < 100) {
+        nav.classList.add('visible');
+      } else {
+        nav.classList.remove('visible');
+      }
+    }
+
+    // Highlight active nav button
+    function updateNavActive() {
+      const ids = Array.from(navBtns).map(b => b.dataset.target);
+      let activeId = null;
+      for (const id of ids) {
+        const el = id === 'sections' ? document.querySelector('.story-section[data-theme]') : document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.5) activeId = id;
+        }
+      }
+      navBtns.forEach(b => {
+        b.classList.toggle('active', b.dataset.target === activeId);
+      });
+    }
+
+    // Click to scroll
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        let el;
+        if (targetId === 'sections') {
+          el = document.querySelector('.story-section[data-theme]');
+        } else {
+          el = document.getElementById(targetId);
+        }
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    window.addEventListener('scroll', () => {
+      updateNavVisibility();
+      updateNavActive();
+    }, { passive: true });
+
+    updateNavVisibility();
+    updateNavActive();
+  }
+
   function updateProgress() {
     const dots = document.querySelectorAll('.progress-dot');
     const bar = document.querySelector('.progress-fill');
@@ -379,6 +436,7 @@
     loadData();
     initParticles();
     initEndingHearts();
+    initQuickNav();
     observeReveal();
 
     window.addEventListener('scroll', updateProgress, { passive: true });
