@@ -71,6 +71,8 @@ function getDefaultData() {
     settings: {
       enableMusic: false,
       musicUrl: '',
+      musicTitle: '',
+      musicArtist: '',
     }
   };
 }
