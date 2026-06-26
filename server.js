@@ -70,10 +70,6 @@ function getDefaultData() {
     chats: [],
     notes: [],
     settings: {
-      enableMusic: false,
-      musicUrl: '',
-      musicTitle: '',
-      musicArtist: '',
       memorialDate: '2026-04-25',
     }
   };
@@ -94,6 +90,12 @@ function readData() {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      if (!raw || raw.trim().length === 0) {
+        console.error('数据文件为空，使用默认数据');
+        const d = getDefaultData();
+        writeData(d);
+        return d;
+      }
       const data = JSON.parse(raw);
       if (migrateData(data)) {
         writeData(data);
@@ -102,7 +104,6 @@ function readData() {
       return data;
     }
   } catch (e) {
-    // Corrupted file: back it up, don't overwrite
     console.error('读取数据失败，已备份原文件:', e.message);
     try {
       const backupFile = DATA_FILE + '.backup.' + Date.now();
@@ -112,12 +113,18 @@ function readData() {
   }
   const d = getDefaultData();
   writeData(d);
+  console.log('使用默认数据初始化');
   return d;
 }
 
 function writeData(data) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  const json = JSON.stringify(data, null, 2);
+  fs.writeFileSync(DATA_FILE, json, 'utf-8');
+  const verify = fs.readFileSync(DATA_FILE, 'utf-8');
+  if (verify !== json) {
+    console.error('数据写入验证失败！');
+  }
 }
 
 function authMiddleware(req, res, next) {
@@ -288,6 +295,7 @@ app.post('/api/admin/notes', authMiddleware, (req, res) => {
   if (!data.notes) data.notes = [];
   data.notes.push(note);
   writeData(data);
+  console.log(`便签已保存，当前共 ${data.notes.length} 条`);
   res.json({ success: true, note });
 });
 
@@ -321,5 +329,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`Admin: http://localhost:${PORT}/admin`);
-  console.log(`Admin password configured`);
+  console.log(`DATA_DIR=${DATA_DIR} (exists: ${fs.existsSync(DATA_DIR)})`);
+  console.log(`DATA_FILE=${DATA_FILE} (exists: ${fs.existsSync(DATA_FILE)})`);
+  console.log(`UPLOAD_DIR=${UPLOAD_DIR} (exists: ${fs.existsSync(UPLOAD_DIR)})`);
 });
